@@ -16,7 +16,7 @@ async def fetch_company_details(url: str) -> dict:
             async with session.get(url) as response:
                 response.raise_for_status()
                 html = await response.text()
-                return parse_html_details(html)
+                return await parse_html_details(html)
     except Exception as e:
         logger.error(f"Error fetching data for query '{url}': {e}")
         return []
@@ -31,12 +31,12 @@ async def fetch_company_data(query: str) -> list[dict]:
             async with session.post(url, data=payload) as response:
                 response.raise_for_status()
                 html = await response.text()
-                return parse_html_search(html)
+                return await parse_html_search(html)
     except Exception as e:
         logger.error(f"Error fetching data for query '{query}': {e}")
         return []
 
-def parse_html_search(html: str) -> list[dict]:
+async def parse_html_search(html: str) -> list[dict]:
     soup = BeautifulSoup(html, 'html.parser')
     results = []
 
@@ -66,10 +66,10 @@ def parse_html_search(html: str) -> list[dict]:
     return results
 
 
-def parse_html_details(html: str) -> dict:
+async def parse_html_details(html: str) -> dict:
     soup = BeautifulSoup(html, 'html.parser')
 
-    def get_value(label):
+    async def get_value(label):
         row = soup.find('td', string=lambda t: t and label in t)
         if row:
             value_td = row.find_next_sibling('td', class_='aiSosDetailValue')
@@ -80,13 +80,13 @@ def parse_html_details(html: str) -> dict:
     name = soup.select_one('.aiSosDetailHead')
     name = name.get_text(strip=True) if name else None
 
-    registration_number = get_value('Entity ID Number')
-    status = get_value('Status')
-    date_registered = get_value('Formation Date')
-    entity_type = get_value('Entity Type')
-    agent_name = get_value('Registered Agent Name')
-    principal_address = get_value('Principal Address')
-    mailing_address = get_value('Principal Mailing Address')
+    registration_number = await get_value('Entity ID Number')
+    status = await get_value('Status')
+    date_registered = await get_value('Formation Date')
+    entity_type = await get_value('Entity Type')
+    agent_name = await get_value('Registered Agent Name')
+    principal_address = await get_value('Principal Address')
+    mailing_address = await get_value('Principal Mailing Address')
 
     # Documents
     document_images = []
