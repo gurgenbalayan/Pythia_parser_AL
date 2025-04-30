@@ -18,7 +18,7 @@ async def fetch_company_details(url: str) -> dict:
                 return await parse_html_details(html)
     except Exception as e:
         logger.error(f"Error fetching data for query '{url}': {e}")
-        return []
+        return {}
 async def fetch_company_data(query: str) -> list[dict]:
     url = "https://arc-sos.state.al.us/cgi/corpname.mbr/output"
     payload = f'search={query}&type=ALL&place=ALL&city=&stat=ALL'
